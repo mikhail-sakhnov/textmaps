@@ -1,3 +1,6 @@
 package: textmap
 import:
 - package: github.com/soider/d
+- package: github.com/gorilla/mux
+  version: ^1.1.0
+- package: github.com/spf13/afero
