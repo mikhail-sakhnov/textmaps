@@ -1,0 +1,3 @@
+package: textmap
+import:
+- package: github.com/soider/d
