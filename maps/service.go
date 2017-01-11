@@ -1,23 +1,27 @@
 package maps
 
 import (
-	"github.com/spf13/afero"
-	"strings"
 	"errors"
 	"fmt"
+	"github.com/spf13/afero"
+	"strings"
 )
 
 var ErrNotExists = errors.New("Textmap doesn't exists")
 
 type MapService struct {
 	dataDir string
-	fs afero.Afero
+	fs      afero.Afero
+	parser  interface {
+		Get(string) parser
+	}
 }
 
 func NewService(dataDir string) MapService {
 	return MapService{
 		dataDir: dataDir,
-		fs: afero.Afero{afero.NewOsFs()},
+		fs:      afero.Afero{afero.NewOsFs()},
+		parser:  parserFactory{},
 	}
 }
 
@@ -34,7 +38,7 @@ func (s MapService) GetAllMaps() (MapsCollection, error) {
 			continue
 		}
 		result = append(result, SingleMap{
-			FileName: fname ,
+			FileName: fname,
 		})
 	}
 	return result, nil
@@ -52,10 +56,14 @@ func (s MapService) GetMapTextContent(path string) (SingleMap, error) {
 		return singleMap, err
 	}
 	singleMap.FileName = path
-	nodes, err := parseNodes(string(rawContent))
+	parser := s.parser.Get(string(rawContent))
 	if err != nil {
 		return singleMap, err
 	}
-	singleMap.Nodes = nodes
+	tree, err := parser.Parse()
+	if err != nil {
+		return singleMap, err
+	}
+	singleMap.Tree = tree
 	return singleMap, nil
 }

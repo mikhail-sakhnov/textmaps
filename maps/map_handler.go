@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"encoding/json"
+	"github.com/soider/d"
 )
 
 type MapHandler struct {
@@ -31,5 +32,6 @@ func (lh MapHandler) handleGet(rw http.ResponseWriter, reqPath string) {
 		return
 	}
 	encoder := json.NewEncoder(rw)
+	d.D(singleMap)
 	encoder.Encode(singleMap)
 }
