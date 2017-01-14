@@ -5,3 +5,5 @@ import:
 - package: github.com/spf13/afero
 - package: github.com/sirupsen/logrus
   version: ~0.11.0
+- package: github.com/satori/go.uuid
+  version: ~1.1.0

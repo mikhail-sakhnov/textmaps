@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/soider/d"
+	"context"
 )
 
 type MapHandler struct {
@@ -14,16 +15,17 @@ type MapHandler struct {
 }
 
 func (lh MapHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
 	switch req.Method {
 	case "GET":
 		reqData := mux.Vars(req)
-		lh.handleGet(rw, reqData["path"])
+		lh.handleGet(ctx, rw, reqData["path"])
 	default:
 		http.Error(rw, "Not implemented", 405)
 	}
 }
 
-func (lh MapHandler) handleGet(rw http.ResponseWriter, reqPath string) {
+func (lh MapHandler) handleGet(ctx context.Context, rw http.ResponseWriter, reqPath string) {
 	singleMap, err := lh.Srv.GetMapTextContent(reqPath)
 	if err != nil {
 		http.Error(rw,
