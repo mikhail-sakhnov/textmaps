@@ -9,15 +9,16 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"textmap/maps"
 	"time"
-	"textmap/logger"
-	log "github.com/sirupsen/logrus"
 
+	"textmap/logger"
+	mapsHandlers "textmap/maps/handlers"
+	mapsServices "textmap/maps/services"
+	"textmap/middlewares"
 )
 
 type Application struct {
-	debug bool
+	debug   bool
 	dataDir string
 	address string
 	port    int
@@ -48,38 +49,30 @@ func (a *Application) Init() {
 }
 
 func (a *Application) initRouter() {
-	mapService := maps.NewService(
+	mapService := mapsServices.NewService(
 		a.dataDir,
 	)
 	a.router = mux.NewRouter()
-	a.router.HandleFunc("/", logger.TraceMiddleware(maps.IndexHandler{
+	a.router.Handle("/api/list", mapsHandlers.IndexHandler{
 		mapService,
-	}))
-	a.router.HandleFunc("/f/{path:.+}", logger.TraceMiddleware(maps.MapHandler{
+	})
+	a.router.Handle("/api/f/{path:.+}", mapsHandlers.MapHandler{
 		mapService,
-	}))
+	})
+
+
+	a.router.Handle("/", http.FileServer(http.Dir("public")))
 }
 
 func (a *Application) initLogger() {
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
-	// Output to stdout instead of the default stderr, could also be a file.
-	log.SetOutput(os.Stdout)
-	// Only log the warning severity or above.
-	if a.debug {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.WarnLevel)
-	}
-
-
+	logger.Init(a.debug)
 }
 
 func (a *Application) initServer() {
 	address := fmt.Sprintf("%s:%d", a.address, a.port)
 	d.D("Listen on ", address)
 	a.server = &http.Server{
-		Handler:      a.router,
+		Handler:      middlewares.TraceMiddleware(a.router),
 		Addr:         address,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -92,7 +85,7 @@ func NewApplication(dataDir string, address string, port int, debug bool) *Appli
 		address: address,
 		port:    port,
 		doneCh:  make(chan struct{}),
-		debug: debug,
+		debug:   debug,
 	}
 }
 
@@ -110,7 +103,7 @@ func main() {
 	flag.Parse()
 
 	app := NewApplication(
-		directory,
+		"/Users/msahnov/Projects/textmaps",
 		address,
 		port,
 		debug,

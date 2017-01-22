@@ -1,16 +1,16 @@
-package maps
+package handlers
 
 import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"encoding/json"
-	"github.com/soider/d"
 	"context"
+	"textmap/maps/entities"
 )
 
 type MapHandler struct {
 	Srv interface {
-		GetMapTextContent(path string) (SingleMap, error)
+		GetMapTextContent(ctx context.Context, path string) (entities.SingleMap, error)
 	}
 }
 
@@ -26,14 +26,15 @@ func (lh MapHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (lh MapHandler) handleGet(ctx context.Context, rw http.ResponseWriter, reqPath string) {
-	singleMap, err := lh.Srv.GetMapTextContent(reqPath)
+	singleMap, err := lh.Srv.GetMapTextContent(ctx, reqPath)
 	if err != nil {
-		http.Error(rw,
-			err.Error(),
-			500)
+		http.Error(rw, "Internal server error: " + err.Error(), 500)
 		return
 	}
+	rw.Header().Set("Content-Type", "application/json")
 	encoder := json.NewEncoder(rw)
-	d.D(singleMap)
-	encoder.Encode(singleMap)
+	err = encoder.Encode(singleMap)
+	if err != nil {
+		http.Error(rw, err.Error(), 500)
+	}
 }

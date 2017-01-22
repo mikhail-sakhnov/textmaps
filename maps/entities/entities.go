@@ -1,9 +1,8 @@
-package maps
+package entities
 
 type SingleMap struct {
-	err      error
 	FileName string      `json:"file_name"`
-	Tree     TextMapTree `json:"tree"`
+	Tree     *TextMapTree `json:"tree,omitempty"`
 }
 
 type MapNode struct {

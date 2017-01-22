@@ -4,6 +4,7 @@ import (
 	"github.com/kr/pretty"
 	"reflect"
 	"testing"
+	. "textmap/maps/entities"
 )
 
 func TestParseSingleLine(t *testing.T) {
@@ -282,7 +283,7 @@ func TestParseSingleLine(t *testing.T) {
 	}
 	for _, tcase := range cases {
 		t.Run(tcase.name, func(t *testing.T) {
-			res, err := parserFactory{}.Get(tcase.raw).Parse()
+			res, err := ParserFactory{}.Get(tcase.raw).Parse()
 			if err != nil {
 				t.Fatalf("Have error %#v", err)
 			}

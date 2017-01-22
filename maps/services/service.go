@@ -1,19 +1,22 @@
-package maps
+package services
 
 import (
 	"errors"
-	"fmt"
 	"github.com/spf13/afero"
 	"strings"
+	"textmap/maps"
+	"textmap/maps/entities"
+	"context"
 )
 
 var ErrNotExists = errors.New("Textmap doesn't exists")
+var ErrEmptyPath = errors.New("Path can't be empty")
 
 type MapService struct {
 	dataDir string
 	fs      afero.Afero
 	parser  interface {
-		Get(string) parser
+		Get(string) maps.Parser
 	}
 }
 
@@ -21,33 +24,39 @@ func NewService(dataDir string) MapService {
 	return MapService{
 		dataDir: dataDir,
 		fs:      afero.Afero{afero.NewOsFs()},
-		parser:  parserFactory{},
+		parser:  maps.ParserFactory{},
 	}
 }
 
-func (s MapService) GetAllMaps() (MapsCollection, error) {
+func (s MapService) GetAllMaps(ctx context.Context) (entities.MapsCollection, error) {
 	// todo: walk for subdirectories
-	var result MapsCollection
+	var result entities.MapsCollection
 	fileInfos, err := s.fs.ReadDir(s.dataDir)
 	if err != nil {
 		return result, err
 	}
 	for _, fileInfo := range fileInfos {
+		if fileInfo.IsDir() {
+			continue
+		}
 		fname := fileInfo.Name()
 		if !strings.HasSuffix(fname, ".tm") {
 			continue
 		}
-		result = append(result, SingleMap{
+		result = append(result, entities.SingleMap{
 			FileName: fname,
 		})
 	}
 	return result, nil
 }
 
-func (s MapService) GetMapTextContent(path string) (SingleMap, error) {
-	var singleMap SingleMap
+func (s MapService) GetMapTextContent(ctx context.Context, path string) (entities.SingleMap, error) {
+	var singleMap entities.SingleMap
+
+	if path == "" {
+		return singleMap, ErrEmptyPath
+	}
 	mapPath := s.dataDir + "/" + path
-	fmt.Println(mapPath)
 	if exists, _ := s.fs.Exists(mapPath); !exists {
 		return singleMap, ErrNotExists
 	}
@@ -64,6 +73,6 @@ func (s MapService) GetMapTextContent(path string) (SingleMap, error) {
 	if err != nil {
 		return singleMap, err
 	}
-	singleMap.Tree = tree
+	singleMap.Tree = &tree
 	return singleMap, nil
 }

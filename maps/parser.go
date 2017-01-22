@@ -3,6 +3,7 @@ package maps
 import (
 	"regexp"
 	"strings"
+	"textmap/maps/entities"
 )
 
 type nodeType int64
@@ -13,9 +14,9 @@ const (
 	descriptionNode
 )
 
-type parserFactory struct{}
+type ParserFactory struct{}
 
-func (pf parserFactory) Get(rawContent string) parser {
+func (pf ParserFactory) Get(rawContent string) Parser {
 	rawContent = strings.Replace(rawContent, "\t", "    ", -1)
 	lines := []string{}
 	for _, line := range strings.Split(rawContent, "\n") {
@@ -30,8 +31,8 @@ func (pf parserFactory) Get(rawContent string) parser {
 	}
 }
 
-type parser interface {
-	Parse() (TextMapTree, error)
+type Parser interface {
+	Parse() (entities.TextMapTree, error)
 }
 
 type simpleParser struct {
@@ -45,11 +46,11 @@ func suffixLength(line string) int {
 
 type lineInfo struct {
 	lineNum int
-	node    MapNode
+	node    entities.MapNode
 }
 
-func (sp *simpleParser) Parse() (TextMapTree, error) {
-	var result TextMapTree
+func (sp *simpleParser) Parse() (entities.TextMapTree, error) {
+	var result entities.TextMapTree
 	var firstLines []lineInfo
 	for lineNum, line := range sp.lines {
 		if line == "" {
@@ -76,19 +77,19 @@ func (sp *simpleParser) Parse() (TextMapTree, error) {
 	return result, nil
 }
 
-func (sp simpleParser) parseFirstLine(line string) (MapNode, error) {
-	return MapNode{sp.typeOfForHuman(line), 1, strings.TrimLeft(line, "0123456789 ."), NodesCollection{}}, nil
+func (sp simpleParser) parseFirstLine(line string) (entities.MapNode, error) {
+	return entities.MapNode{sp.typeOfForHuman(line), 1, strings.TrimLeft(line, "0123456789 ."), entities.NodesCollection{}}, nil
 }
 
 // TODO: do it more intellegent, without fixed tab size, just comparing with previous line
 const tabSize = 4
-func (sp simpleParser) parseLine(line string) (MapNode, error) {
-	return MapNode{sp.typeOfForHuman(line), suffixLength(line)/tabSize + 1, strings.TrimLeft(line, " *"), NodesCollection{}}, nil
+func (sp simpleParser) parseLine(line string) (entities.MapNode, error) {
+	return entities.MapNode{sp.typeOfForHuman(line), suffixLength(line)/tabSize + 1, strings.TrimLeft(line, " *"), entities.NodesCollection{}}, nil
 }
 
-func (sp *simpleParser) parseChildrens(fromLine int, fromLevel int) (NodesCollection, error) {
+func (sp *simpleParser) parseChildrens(fromLine int, fromLevel int) (entities.NodesCollection, error) {
 	shouldStop := false
-	result := NodesCollection{}
+	result := entities.NodesCollection{}
 	for i := fromLine+1; !shouldStop && i < len(sp.lines); i++ {
 		if sp.parsed[i] {
 			continue

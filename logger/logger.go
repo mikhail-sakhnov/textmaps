@@ -1,26 +1,27 @@
 package logger
 
 import (
-	"context"
-	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
-	"net/http"
+	"context"
+	"textmap/middlewares"
+	"log"
+	"os"
 )
 
-type requestIDKeyType struct{}
-
-var requestIDKey = requestIDKeyType{}
-
-func TraceMiddleware(next http.Handler) http.HandlerFunc {
-	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		requestID := uuid.NewV4()
-
-		ctx := context.WithValue(context.Background(), requestIDKey, requestID.String())
-		next.ServeHTTP(rw, req.WithContext(ctx))
-	})
+func Init(debug bool) {
+	// Log as JSON instead of the default ASCII formatter.
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	// Output to stdout instead of the default stderr, could also be a file.
+	log.SetOutput(os.Stdout)
+	// Only log the warning severity or above.
+	if debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	} else {
+		logrus.SetLevel(logrus.WarnLevel)
+	}
 }
 
-func LoggerFromContext(ctx context.Context) *logrus.Entry {
-	requestID := ctx.Value(requestIDKey).(string)
+func FromContext(ctx context.Context) *logrus.Entry {
+	requestID := ctx.Value(middlewares.RequestIDKey).(string)
 	return logrus.WithField("request_id", requestID)
 }
