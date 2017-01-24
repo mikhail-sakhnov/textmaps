@@ -3,7 +3,6 @@ package main
 
 import (
 	"flag"
-
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"

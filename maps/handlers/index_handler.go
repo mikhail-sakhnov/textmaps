@@ -31,7 +31,6 @@ func (ih IndexHandler) handleGet(ctx context.Context, rw http.ResponseWriter) {
 	WithField("maps_count", len(maps)).
 	WithField("error", err).
 	Debug("Loaded maps")
-
 	d.D(maps)
 	if err != nil {
 		http.Error(rw, "Internal server error: " + err.Error(), 500)

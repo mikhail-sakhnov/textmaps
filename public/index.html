@@ -13,10 +13,16 @@
         #app {
             padding-left: 2em;
             padding-right: 2em;
-            padding-botton: 5em;
+            padding-bottom: 3em;
         }
-    </style>
 
+
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>Material Design Lite</title>
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
 
@@ -64,15 +70,15 @@
 
 <script type="text/x-template" id="textMapListElement">
         <div>
-            <span class="mdl-chip">
+            <div class="mdl-chip">
                 <span class="mdl-chip__text"><router-link v-bind:to='url'>{{item.file_name}}</router-link></span>
-            </span>
+            </div>
         </div>
 </script>
 
 <script type="text/x-template" id="textMapNodeTemplate">
     <div :class="item.type" class="mapNode">
-        <span class="mdl-chip mdl-chip--deletable">
+        <span class="mdl-chip mdl-chip--deletable" style="">
             <span class="mdl-chip__text">{{item.text}}</span>
             <button type="button" class="mdl-chip__action" v-on:click="showChildrens" v-if="item.nodes">
                 <i class="material-icons">
