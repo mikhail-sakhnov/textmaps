@@ -3,28 +3,46 @@
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
     <script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <style>
+        .mapNode .mapNode{
+            margin-left: 2em;
+        }
+        #app {
+            padding-left: 2em;
+            padding-right: 2em;
+            padding-botton: 5em;
+        }
+    </style>
 
 </head>
 <body>
 
-
-<div id="app">
-    <h1>Hello App!</h1>
-    <p>
-        <!-- используйте компонент router-link для создания ссылок. -->
-        <!-- входной параметр `to` задаёт путь для перехода -->
-        <!-- по умолчанию <router-link> отображается тегом `<a>` -->
-        <router-link to="/textmap/dsa/asd/dsa/asd/dsasda/asd">Go to Textmap</router-link>
-        <router-link to="/">Go to Index</router-link>
-    </p>
-    <!-- компонент, соответствующий пути, отобразится здесь -->
-    <router-view></router-view>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+            <span class="mdl-layout-title">Textmaps</span>
+            <nav class="mdl-navigation">
+                <a class="mdl-navigation__link" href="/">Index</a>
+            </nav>
+        </div>
+    </header>
+    <main class="mdl-layout__content">
+        <div class="page-content">
+            <div id="app">
+                <router-view></router-view>
+            </div>
+        </div>
+    </main>
 </div>
+
 
 <script type="text/x-template" id="indexTemplate">
     <div>
         <div class="loading" v-if="loading">
-            Loading...
+            <div class="mdl-spinner mdl-js-spinner is-active"></div>
         </div>
 
         <div v-if="error" class="error">
@@ -38,80 +56,171 @@
     </div>
 </script>
 
+<script type="text/x-template" id="textMapTreeTemplate">
+    <div>
+        <TextMapNodeTemplate v-for="item in item.root" v-bind:item="item"/>
+    </div>
+</script>
+
+<script type="text/x-template" id="textMapListElement">
+        <div>
+            <span class="mdl-chip">
+                <span class="mdl-chip__text"><router-link v-bind:to='url'>{{item.file_name}}</router-link></span>
+            </span>
+        </div>
+</script>
+
+<script type="text/x-template" id="textMapNodeTemplate">
+    <div :class="item.type" class="mapNode">
+        <span class="mdl-chip mdl-chip--deletable">
+            <span class="mdl-chip__text">{{item.text}}</span>
+            <button type="button" class="mdl-chip__action" v-on:click="showChildrens" v-if="item.nodes">
+                <i class="material-icons">
+                            <span v-if="!show_childrens">expand_more</span>
+                            <span v-if="show_childrens">expand_less</span>
+                </i>
+            </button>
+        </span>
+        <div v-if="show_childrens">
+            <TextMapNodeTemplate v-for="child in item.nodes" v-bind:item="child"/>
+        </div>
+    </div>
+</script>
+
 <script type="text/x-template" id="textMapTemplate">
-    <div> Param from <span v-on:click="counter += 1">query</span> {{message}} {{counter}} {{$route.params.fullpath}}</div>
+    <div>
+        <div class="loading" v-if="loading">
+            <div class="mdl-spinner mdl-js-spinner is-active"></div>
+        </div>
+
+        <div v-if="error" class="error">
+            {{ error }}
+        </div>
+        <div v-if="textMapRaw" class="content">
+            <h3> {{ textMapRaw.file_name }} </h3>
+            <TextMapTreeTemplate v-bind:item="textMapRaw.tree"/>
+        </div>
+    </div>
 </script>
 
 <script>
-
-
     function getTextMapList(client, callback) {
         client.get("/api/list").then((response) => {
-            console.log(response.data)
-            callback(null, response.data);
-        }, (response) => {
+            callback(null, response.data)
+    },
+        (response) =>
+        {
             callback(response.error, response);
-            console.log("ERROR", response)
         })
     };
 
-    const TextmapViewComponent = {
+    function getTextMap(client, mapId, callback) {
+        client.get("/api/f/" + mapId).then((response) => {
+            callback(null, response.data
+    )
+    },
+        (response) =>
+        {
+            callback(response.error, response)
+        })
+    }
+
+    const TextMapViewComponent = {
         template: "#textMapTemplate",
-        data: function() {
-            console.log("Will load following textmap", this.$route.params.fullpath)
+        data: function () {
             return {
-                message: "some initial message",
-                counter: 0
+                textMapId: this.$route.params.fullpath,
+                textMapRaw: null,
+                error: null
+            }
+        },
+        created: function () {
+            this.fetchData()
+        },
+        methods: {
+            fetchData: function () {
+                this.loading = true;
+                getTextMap(this.$http, this.textMapId, (err, textMap) => {
+                    this.loading = false;
+                if (err) {
+                    this.error = err.toString();
+                } else {
+                    this.textMapRaw = textMap
+                }
+            })
+                ;
             }
         }
     }
+
     const IndexViewComponent = {
         template: '#indexTemplate',
-        data: function() {
+        data: function () {
             return {
                 loading: false,
                 textMaps: null,
                 error: null
             }
         },
-        created: function() {
+        created: function () {
             this.fetchData()
         },
         watch: {
             '$route': 'fetchData'
         },
         methods: {
-            fetchData: function() {
+            fetchData: function () {
                 this.error = this.textMaps = null
                 this.loading = true
                 getTextMapList(this.$http, (err, textMaps) => {
                     this.loading = false
-                    if (err) {
-                        this.error = err.toString();
-                    } else {
-                        this.textMaps = textMaps
-                    }
-                });
+                if (err) {
+                    this.error = err.toString();
+                } else {
+                    this.textMaps = textMaps
+                }
+            })
+                ;
             }
         }
     }
 
     const TextMapListElementComponent = {
-        template: "<div><router-link v-bind:to='url'>{{item.file_name}}</router-link></div>",
+        template: "#textMapListElement",
         props: ['item'],
         computed: {
-            "url": function() {
+            "url": function () {
                 return "/textmap/" + this.item.file_name;
             }
         }
     }
 
+    const TextMapTreeTemplate = {
+        template: "#textMapTreeTemplate",
+        props: ['item']
+    }
+
+    const TextMapNodeTemplate = {
+        template: "#textMapNodeTemplate",
+        props: ['item'],
+        data: function() {
+            return {show_childrens: false}
+        },
+        methods: {
+            showChildrens: function() {
+                this.show_childrens = !this.show_childrens
+            }
+        }
+    }
 
     Vue.component('TextMapListElement', TextMapListElementComponent);
+    Vue.component('TextMapTreeTemplate', TextMapTreeTemplate);
+    Vue.component('TextMapNodeTemplate', TextMapNodeTemplate);
+
 
     const routes = [
-        { path: '/textmap/:fullpath*', component: TextmapViewComponent },
-        { path: '/', component: IndexViewComponent },
+        {path: '/textmap/:fullpath*', component: TextMapViewComponent},
+        {path: '/', component: IndexViewComponent},
     ]
 
     const router = new VueRouter({
@@ -119,11 +228,9 @@
     })
 
 
-
     const app = new Vue({
         router: router,
     }).$mount('#app')
-
 
 
 </script>

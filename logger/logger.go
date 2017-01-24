@@ -22,6 +22,9 @@ func Init(debug bool) {
 }
 
 func FromContext(ctx context.Context) *logrus.Entry {
-	requestID := ctx.Value(middlewares.RequestIDKey).(string)
-	return logrus.WithField("request_id", requestID)
+	requestID, found := ctx.Value(middlewares.RequestIDKey).(string)
+	if found {
+		return logrus.WithField("request_id", requestID)
+	}
+	return logrus.WithField("request_id", "no_request_id")
 }
