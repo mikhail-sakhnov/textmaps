@@ -17,5 +17,3 @@ func TraceMiddleware(next http.Handler) http.HandlerFunc {
 		next.ServeHTTP(rw, req.WithContext(ctx))
 	})
 }
-
-

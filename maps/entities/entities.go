@@ -1,7 +1,7 @@
 package entities
 
 type SingleMap struct {
-	FileName string      `json:"file_name"`
+	FileName string       `json:"file_name"`
 	Tree     *TextMapTree `json:"tree,omitempty"`
 }
 

@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"net/http"
 	"context"
-	"textmap/maps/entities"
-	"textmap/logger"
-	"github.com/soider/d"
 	"encoding/json"
+	"github.com/soider/d"
+	"net/http"
+	"textmap/logger"
+	"textmap/maps/entities"
 )
 
 type IndexHandler struct {
@@ -28,18 +28,18 @@ func (ih IndexHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 func (ih IndexHandler) handleGet(ctx context.Context, rw http.ResponseWriter) {
 	maps, err := ih.Srv.GetAllMaps(ctx)
 	logger.FromContext(ctx).
-	WithField("maps_count", len(maps)).
-	WithField("error", err).
-	Debug("Loaded maps")
+		WithField("maps_count", len(maps)).
+		WithField("error", err).
+		Debug("Loaded maps")
 	d.D(maps)
 	if err != nil {
-		http.Error(rw, "Internal server error: " + err.Error(), 500)
+		http.Error(rw, "Internal server error: "+err.Error(), 500)
 		return
 	}
 	rw.Header().Set("Content-Type", "application/json")
 	encoder := json.NewEncoder(rw)
 	err = encoder.Encode(maps)
 	if err != nil {
-		http.Error(rw, "Internal server error: " + err.Error(), 500)
+		http.Error(rw, "Internal server error: "+err.Error(), 500)
 	}
 }

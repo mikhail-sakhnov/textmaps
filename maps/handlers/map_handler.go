@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"context"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-	"encoding/json"
-	"context"
 	"textmap/maps/entities"
 )
 
@@ -28,7 +28,7 @@ func (lh MapHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 func (lh MapHandler) handleGet(ctx context.Context, rw http.ResponseWriter, reqPath string) {
 	singleMap, err := lh.Srv.GetMapTextContent(ctx, reqPath)
 	if err != nil {
-		http.Error(rw, "Internal server error: " + err.Error(), 500)
+		http.Error(rw, "Internal server error: "+err.Error(), 500)
 		return
 	}
 	rw.Header().Set("Content-Type", "application/json")

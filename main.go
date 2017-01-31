@@ -2,34 +2,35 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/rakyll/statik/fs"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
 	"sync"
 	"textmap/logger"
 	mapsHandlers "textmap/maps/handlers"
 	mapsServices "textmap/maps/services"
 	"textmap/middlewares"
 	_ "textmap/statik"
-	"github.com/rakyll/statik/fs"
-	"github.com/sirupsen/logrus"
-	"context"
+	"time"
 )
+
 var s sync.Pool
 
 type Application struct {
-	debug   bool
+	debug       bool
 	embedStatic bool
-	dataDir string
-	address string
-	port    int
-	doneCh  chan struct{}
-	router  *mux.Router
-	server  *http.Server
+	dataDir     string
+	address     string
+	port        int
+	doneCh      chan struct{}
+	router      *mux.Router
+	server      *http.Server
 
 	logger *logrus.Entry
 }
@@ -95,11 +96,11 @@ func (a *Application) initServer() {
 
 func NewApplication(dataDir string, address string, port int, debug, embedStatic bool) *Application {
 	return &Application{
-		dataDir: dataDir,
-		address: address,
-		port:    port,
-		doneCh:  make(chan struct{}),
-		debug:   debug,
+		dataDir:     dataDir,
+		address:     address,
+		port:        port,
+		doneCh:      make(chan struct{}),
+		debug:       debug,
 		embedStatic: embedStatic,
 	}
 }

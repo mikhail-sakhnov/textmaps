@@ -1,12 +1,12 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"github.com/spf13/afero"
 	"strings"
 	"textmap/maps"
 	"textmap/maps/entities"
-	"context"
 )
 
 var ErrNotExists = errors.New("Textmap doesn't exists")

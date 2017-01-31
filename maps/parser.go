@@ -26,7 +26,7 @@ func (pf ParserFactory) Get(rawContent string) Parser {
 		lines = append(lines, line)
 	}
 	return &simpleParser{
-		lines: lines,
+		lines:  lines,
 		parsed: map[int]bool{},
 	}
 }
@@ -36,7 +36,7 @@ type Parser interface {
 }
 
 type simpleParser struct {
-	lines []string
+	lines  []string
 	parsed map[int]bool
 }
 
@@ -83,6 +83,7 @@ func (sp simpleParser) parseFirstLine(line string) (entities.MapNode, error) {
 
 // TODO: do it more intellegent, without fixed tab size, just comparing with previous line
 const tabSize = 4
+
 func (sp simpleParser) parseLine(line string) (entities.MapNode, error) {
 	return entities.MapNode{sp.typeOfForHuman(line), suffixLength(line)/tabSize + 1, strings.TrimLeft(line, " *"), entities.NodesCollection{}}, nil
 }
@@ -90,7 +91,7 @@ func (sp simpleParser) parseLine(line string) (entities.MapNode, error) {
 func (sp *simpleParser) parseChildrens(fromLine int, fromLevel int) (entities.NodesCollection, error) {
 	shouldStop := false
 	result := entities.NodesCollection{}
-	for i := fromLine+1; !shouldStop && i < len(sp.lines); i++ {
+	for i := fromLine + 1; !shouldStop && i < len(sp.lines); i++ {
 		if sp.parsed[i] {
 			continue
 		}
@@ -131,8 +132,8 @@ func (sp simpleParser) typeOf(line string) nodeType {
 
 func (sp simpleParser) typeOfForHuman(line string) string {
 	return map[nodeType]string{
-		embededNode: "embed",
+		embededNode:     "embed",
 		descriptionNode: "description",
-		firstLevel: "first_level",
+		firstLevel:      "first_level",
 	}[sp.typeOf(line)]
 }

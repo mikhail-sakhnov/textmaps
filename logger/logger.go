@@ -1,11 +1,11 @@
 package logger
 
 import (
-	"github.com/sirupsen/logrus"
 	"context"
-	"textmap/middlewares"
+	"github.com/sirupsen/logrus"
 	"log"
 	"os"
+	"textmap/middlewares"
 )
 
 func Init(debug bool) {
