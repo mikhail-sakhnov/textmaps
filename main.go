@@ -121,7 +121,7 @@ func main() {
 	flag.Parse()
 
 	app := NewApplication(
-		"/Users/msahnov/Projects/textmaps",
+		directory,
 		address,
 		port,
 		debug,
